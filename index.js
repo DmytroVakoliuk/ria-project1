@@ -5,18 +5,16 @@ const http = require("http");
 let server = http.createServer(function (req, res) {
 
     if (req.url.split("/").splice(3).shift() == 'purchases') {
-        // console.log(req.url);
-        // console.log(req.method);
         try{
             require(`./controllers/purchasesController`)[`${req.method.toLocaleLowerCase()}Action`](req, res);
         } catch (e) {
             console.log(e);
             res.end("Error");
         }
-
     } else {
         try {
-            require(`./controllers/${req.url.split("/").splice(1).shift()}Controller`)[`${req.method.toLocaleLowerCase()}Action`](req, res);
+            require(`./controllers/${req.url.split("/").splice(1).shift()}Controller`)
+                [`${req.method.toLocaleLowerCase()}Action`](req, res);
         } catch (e) {
             console.log(e);
             res.end("Error");

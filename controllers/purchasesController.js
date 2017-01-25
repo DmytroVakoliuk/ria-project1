@@ -8,10 +8,10 @@ function getUserId(req) {
     return req.url.split('/')[2];
 }
 
-memcached.connect( 'localhost:11211', function( err, conn ){
+/*memcached.connect( 'localhost:11211', function( err, conn ){
     if( err ) throw new Error( err );
-    // console.log(conn);
-});
+    console.log(conn.server);
+});*/
 
 module.exports = {
     /**
@@ -22,14 +22,12 @@ module.exports = {
         let userId = getUserId(req);
 
         memcached.get(userId, function (err, data) {
-            // console.log('eror: ' + err);
             if(data){
                 let value = JSON.parse(data);
-                // console.log(typeof(value.count));
                 res.end(value.count.toString());
             } else {
-                console.log('Cannot read data');
-                res.end("Cannot read data from memcached");
+                // console.log('Cannot read data');
+                res.end("invalid data");
             }
         });
 
@@ -41,33 +39,49 @@ module.exports = {
      * @param res
      */
     postAction: function (req, res) {
-
         let userId = getUserId(req);
-        // console.log(userId);
-
         try {
             let body = '';
             req.on('data', function (chunk) {
-                console.log('chunk:' + typeof(chunk));
                 body += chunk.toString();
             });
             req.on("end", function () {
-                console.log('body:' + body);
 
                 memcached.set(userId, body, 1000, function (err) {
-
                     if (err) {
                         res.end('Error --> Cannot store a value in memcached');
                     } else {
                         res.end("OK");
                     }
-                    // console.log('done');
                 });
-            })
+            });
         } catch (e) {
             res.end('Cannot parse request body');
         }
-
-
     },
+
+    /**
+     * @example curl -v -X DELETE "http://127.0.0.1:3000/users/2/purchases"
+     */
+    deleteAction: function (req, res) {
+        let userId = getUserId(req);
+        if (userId) {
+            memcached.get(userId, function (err, data) {
+                if(data){
+                    memcached.del(userId, function (err) {
+                        console.log(err);
+                        if (err) {
+                            res.end('Error --> Cannot delete a value in memcached');
+                        } else {
+                            res.end("OK");
+                        }
+                    });
+                } else {
+                    res.end("invalid data");
+                }
+            });
+        } else {
+            res.end("Invalid userId");
+        }
+    }
 };
