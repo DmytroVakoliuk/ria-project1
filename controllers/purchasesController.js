@@ -8,11 +8,6 @@ function getUserId(req) {
     return req.url.split('/')[2];
 }
 
-/*memcached.connect( 'localhost:11211', function( err, conn ){
-    if( err ) throw new Error( err );
-    console.log(conn.server);
-});*/
-
 module.exports = {
     /**
      * @example curl -v -X GET "http://127.0.0.1:3000/users/2/purchases"
